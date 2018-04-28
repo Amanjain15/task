@@ -13,28 +13,6 @@ import datetime
 
 
 # Create your views here.
-class UploadFileForm(forms.Form):
-	file = forms.FileField()
-
-@csrf_exempt
-def import_details(request):
-	try:
-		if request.method == "POST":
-			form = UploadFileForm(request.POST,request.FILES)
-			if form.is_valid():
-				request.FILES['file'].save_to_database(model=BranchData,mapdict=["ifsc","bank_id","branch","address","city","district","state"])
-				return HttpResponse("OK")
-			else:
-				return HttpResponseBadRequest()
-		else:
-			form = UploadFileForm()
-			return render(request,'upload.html',{'form':form ,'msg':"Upload table"})
-	except Exception as e:
-		print str(e);
-		return HttpResponse("Page not found")
-
-	return HttpResponse("<H1>404 PAGE NOT FOUND</H1>")
-
 @csrf_exempt
 def import_branch(request):
 	rows=[]
@@ -47,7 +25,7 @@ def import_branch(request):
 				rows.append(row)
 				# 38434 , 38785, 40000
 		print datetime.datetime.now()
-		for row in rows[44169:44170]:
+		for row in rows[44169:]:
 			ifsc=str(row[0])
 			bank_id=row[1]
 			branch=str(row[2])
@@ -82,50 +60,60 @@ def import_branch(request):
 @csrf_exempt
 def get_details(request):
 	
-	if request.method == 'POST':		
-		ifsc=request.POST.get('ifsc')
-		bank_name=request.POST.get('bank_id')
-		branch=request.POST.get('branch')
-		address=request.POST.get('address')
-		city=request.POST.get('city')
-		district=request.POST.get('district')
-		state=request.POST.get('state')
-		response=[]
-		if ifsc != "":
-			branch_obj=BranchData.objects.get(ifsc=ifsc)
-			bank_obj=BankData.objects.get(bank_name=bank_name)
-			temp={}
-			temp['ifsc']=branch_obj.ifsc
-			temp['bank_id']=bank_obj.bank_id
-			temp['branch']=branch_obj.branch
-			temp['address']=branch_obj.address
-			temp['city']=branch_obj.city
-			temp['district']=branch_obj.district
-			temp['state']=branch_obj.state
-			temp['bank_name']=bank_obj.bank_name
-			response.append(temp)
-		elif bank_name != "":
-			bank_obj=BankData.objects.get(bank_name=bank_name)
-			if city != "":
-				branch_set=BranchData.objects.filter(city=city,bank_id=bank_obj)
-				for branch in branch_set:
-					temp={}
-					temp['ifsc']=branch_set.ifsc
-					temp['bank_id']=bank_set.bank_id
-					temp['branch']=branch_set.branch
-					temp['address']=branch_set.address
-					temp['city']=branch_set.city
-					temp['district']=branch_set.district
-					temp['state']=branch_set.state
-					temp['bank_name']=bank_set.bank_name
-					response.append(temp)
-		return JsonResponse(response)
+	if request.method == 'POST':	
+		ifsc=str(request.POST.get('ifsc'))
+		bank_name=str(request.POST.get('bank_name'))
+		branch=str(request.POST.get('branch'))
+		address=str(request.POST.get('address'))
+		city=str(request.POST.get('city'))
+		district=str(request.POST.get('district'))
+		state=str(request.POST.get('state'))
+		print city,bank_name,ifsc		
+		Json={}
+		branch_list=[]
+		try:
+			if ifsc != None and ifsc != "":
+				branch_obj=BranchData.objects.get(ifsc=str(ifsc))
+				temp=util(branch_obj)
+				branch_list.append(temp)
+			elif bank_name != None and bank_name != "":
+				bank_obj=BankData.objects.get(bank_name=str(bank_name))
+				if city != None and city != "":
+					# Branches - City Specific
+					branch_set=BranchData.objects.filter(city=str(city),bank_id=bank_obj)
+					for branch in branch_set:
+						temp=util(branch)
+						branch_list.append(temp)
+				else:
+					# All Branches 
+					branch_set=BranchData.objects.filter(bank_id=bank_obj)
+					for branch in branch_set:
+						temp=util(branch)
+						branch_list.append(temp)
+			Json["success"]=True
+			Json["branch_set"]=branch_list
+		except Exception as e:
+			print str(e)
+			Json["success"]=False
+			Json["message"]="Error occured due to : " + str(e)
+		template = get_template("./table.html")
+		context=Context(Json)
+		html=template.render(Json)
+		return HttpResponse(html)
 	elif request.method == 'GET' :
-		response=[]
-
-		template = get_template("bank.html")
-		context=Context(response_json)
-		html=template.render(context)
+		template = get_template("./detail.html")
+		html=template.render()
 		return HttpResponse(html)
 
-		
+def util(branch_obj):
+	temp={}
+	temp['ifsc']=branch_obj.ifsc
+	temp['bank_id']=branch_obj.bank_id.bank_id
+	temp['branch']=branch_obj.branch
+	temp['address']=branch_obj.address
+	temp['city']=branch_obj.city
+	temp['district']=branch_obj.district
+	temp['state']=branch_obj.state
+	temp['bank_name']=branch_obj.bank_id.bank_name
+	return temp
+	pass

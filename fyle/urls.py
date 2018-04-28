@@ -24,10 +24,10 @@ from bank.views import *
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^import/', import_details),
     url(r'^import_branch/', import_branch),
-
+    url(r'^get_details/', get_details),
 ]
 
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

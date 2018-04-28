@@ -1,0 +1,40 @@
+<div class="col s1 m1 l1">
+</div>
+{% if success == True %}
+    <div class="col s10 m10 l10">
+        <table id="branch_table" class="responsive-table highlight bordered" style="background: #FFFFFF;margin-top: 10px;margin-bottom: 40px ">
+            <thead>
+                <tr>
+                    <th>S. No.</th>
+                    <th>IFSC</th>
+                    <th>Bank ID</th>
+                    <th>Bank Name</th>
+                    <th>Branch</th>
+                    <th>City</th>
+                    <th>District</th>
+                    <th>State</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for list in branch_set %}
+                    <tr>
+                        <td>{{forloop.counter}}</td>
+                        <td>{{list.ifsc}}</td>
+                        <td>{{list.bank_id}}</td>
+                        <td>{{list.bank_name}}</td>
+                        <td>{{list.branch}}</td>
+                        <td>{{list.city}}</td>
+                        <td>{{list.district}}</td>
+                        <td>{{list.state}}</td>
+                        <td>{{list.address}}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="card col s8 m8 l8">
+        <H5>{{message}}</H5>
+    </div>
+{% endif %}
