@@ -1,11 +1,16 @@
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+
+from django.template import Context
+from django.template.loader import get_template
+
 from .models import *
 
 from django.http import JsonResponse,HttpResponse
 from django import forms
 import csv
 import datetime
+
 
 # Create your views here.
 class UploadFileForm(forms.Form):
@@ -42,7 +47,7 @@ def import_branch(request):
 				rows.append(row)
 				# 38434 , 38785, 40000
 		print datetime.datetime.now()
-		for row in rows[40001:50000]:
+		for row in rows[44169:44170]:
 			ifsc=str(row[0])
 			bank_id=row[1]
 			branch=str(row[2])
@@ -114,11 +119,13 @@ def get_details(request):
 					temp['state']=branch_set.state
 					temp['bank_name']=bank_set.bank_name
 					response.append(temp)
-		
 		return JsonResponse(response)
 	elif request.method == 'GET' :
 		response=[]
 
+		template = get_template("bank.html")
+		context=Context(response_json)
+		html=template.render(context)
+		return HttpResponse(html)
 
-		return response
 		
