@@ -42,7 +42,7 @@ def import_branch(request):
 				rows.append(row)
 				# 38434 , 38785, 40000
 		print datetime.datetime.now()
-		for row in rows[40001:50000]:
+		for row in rows[44169:]:
 			ifsc=str(row[0])
 			bank_id=row[1]
 			branch=str(row[2])
